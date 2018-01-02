@@ -1,3 +1,4 @@
 bin/
 vendor/
 settings.txt
+coinlist.json
