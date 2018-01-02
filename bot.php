@@ -2,7 +2,7 @@
 ini_set("log_errors", 1);
 ini_set("error_log", "/var/log/banjobot.log");
 
-chdir("/home/pi/banjobot");			
+chdir("/home/pi/banjobot");
 if (!(is_file(getcwd().'/settings.txt'))) die('settings.txt does not exist');
 $ini = parse_ini_file(getcwd().'/settings.txt');
 
@@ -32,16 +32,16 @@ $client->on('message', function ($data) use ($client) {
 			file_put_contents($filename, $file);
 			error_log("\tSize: ".filesize_formatted($filename));
 			error_log("Banjofying: ".substr($data['text'], 1, -1));
-			chdir("/home/pi/go/src/github.com/zikes/chrisify");
+			chdir("/home/pi/chrisify");
 			shell_exec("./chrisify --faces /home/pi/banjobot/banjoboys $filename > $filename2");
 			error_log("\tDropboxing $filename");
-			shell_exec("php /home/pi/plantbot/dropboxUploadFile.php $filename2");
-			$url = shell_exec("php /home/pi/plantbot/dropboxShareLink.php $filename2");
+			shell_exec("php /home/pi/banjobot/dropboxUploadFile.php $filename2");
+			$url = shell_exec("php /home/pi/banjobot/dropboxShareLink.php $filename2");
             if ($url) {
                 unlink($filename);
                 unlink($filename2);
             }
-			
+
 			error_log("\tGoogle-urling..");
 			$ch = curl_init();
 			curl_setopt($ch,CURLOPT_URL, 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyDpJpbZ2s3Gftdephw1HSB1Mk00PLzx_I0');
@@ -57,7 +57,14 @@ $client->on('message', function ($data) use ($client) {
 				error_log('Url-shortening FAILED');
 			}
 			error_log("\tGot this url for $filename: $shortUrl");
-			
+
+      $message = $client->getMessageBuilder()
+        ->setText($shortUrl)
+        ->setChannel($channel)
+        ->create();
+      $client->postMessage($message)
+
+      /*
 			error_log("\tSaving to db");
 			$connection = mysqli_connect('localhost', 'root', '');
 			if ($connection === false) {
@@ -71,6 +78,7 @@ $client->on('message', function ($data) use ($client) {
 					die(mysqli_error($connection));
 				}
 			}
+      */
     	});
 	} elseif (strpos('ping', $data['text']) === 0) {
 		$client->getChannelGroupOrDMByID($data['channel'])->then(function ($channel) use ($client, $data) {
@@ -153,4 +161,3 @@ $client->connect()->then(function () {
 });
 
 $loop->run();
-
