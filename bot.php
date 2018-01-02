@@ -81,7 +81,7 @@ $client->on('message', function ($data) use ($client) {
 						->create();
 			$client->postMessage($message);
 		});
-	} elseif (strpos('https://goo.gl/', $data['text']) === false && strpos("Oh that's an interesting image..", $data['text']) === false && strpos('Pong motherfucker!', $data['text']) === false && !empty($data['text'])) {
+	} elseif (strpos('https://goo.gl/', $data['text']) === false && strpos("Oh that's an interesting image..", $data['text']) === false && strpos('Pong motherfucker!', $data['text']) === false && strpos('BTC', $data['text']) === false && !empty($data['text'])) {
 		$client->getChannelGroupOrDMByID($data['channel'])->then(function ($channel) use ($client, $data) {
 			$connection = mysqli_connect('localhost', 'root', '');
 			if ($connection === false) {
@@ -104,7 +104,40 @@ $client->on('message', function ($data) use ($client) {
 				}
 			}
 		});
-	}
+	} else {
+        /** skip for now **/
+        /*
+        $coinlistFile = file_get_contents('coinlist.json');
+        $coinlistJson = json_decode($coinlistFile);
+
+        $coinKeys = array();
+        foreach($coinlistJson as $key => $value) {
+            array_push($coinKeys, $key);
+        }
+
+        foreach ($coinKeys as $key) {
+            $input = $data['text'];
+	        if (strpos($input, $key) !== false) {
+                $input = preg_replace('/[^ \w]+/', '', $input);
+                //error_log('xxx: '.$input);
+                $words = explode(" ", $input);
+                if (in_array($key, $words)) {
+                    $data['crypto'] = $key;
+                    //error_log("Skickar key: $key");
+                    $client->getChannelGroupOrDMByID($data['channel'])->then(function ($channel) use ($client, $data) {
+                        $rateMsg = shell_exec("php /home/pi/banjobot/getCrypto.php {$data['crypto']}");
+                        error_log("Output: $rateMsg");
+                        $message = $client->getMessageBuilder()
+                                    ->setText($rateMsg)
+                                    ->setChannel($channel)
+                                    ->create();
+                        $client->postMessage($message);
+                    });
+                }
+            }
+        }
+        **/
+    }
 });
 
 function filesize_formatted($path)
