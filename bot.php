@@ -17,14 +17,15 @@ $client->on('message', function ($data) use ($client) {
 
 	if (substr($data['text'], 1, 4) == 'http' && in_array(strtolower(substr($data['text'], -5, -1)), array('.jpg', '.png', '.gif'))) {
 		$client->getChannelGroupOrDMByID($data['channel'])->then(function ($channel) use ($client, $data) {
-			/*
-            $msg = "Oh that's an interesting image..";
+
+      /*
+      $msg = "Oh that's an interesting image..";
 			$message = $client->getMessageBuilder()
 						->setText($msg)
 						->setChannel($channel)
 						->create();
 			$client->postMessage($message);
-            */
+      */
 
 			$file = file_get_contents(substr($data['text'], 1, -1));
 			$filename = "/tmp/bild1-".date('Y-m-d_h:i:s').".jpg";
@@ -32,25 +33,27 @@ $client->on('message', function ($data) use ($client) {
 			file_put_contents($filename, $file);
 			error_log("\tSize: ".filesize_formatted($filename));
 			error_log("Banjofying: ".substr($data['text'], 1, -1));
-			chdir("/home/pi/chrisify");
+			chdir("/usr/share/go-1.7/src/github.com/zikes/chrisify");
 			shell_exec("./chrisify --faces /home/pi/banjobot/banjoboys $filename > $filename2");
 			error_log("\tDropboxing $filename");
 			shell_exec("php /home/pi/banjobot/dropboxUploadFile.php $filename2");
 			$url = shell_exec("php /home/pi/banjobot/dropboxShareLink.php $filename2");
-            if ($url) {
-                unlink($filename);
-                unlink($filename2);
-            }
-
-			error_log("\tGoogle-urling..");
+      error_log("Got this url: $url");
+			/*
+      if ($url) {
+          unlink($filename);
+          unlink($filename2);
+      }
+      */
+      error_log("\tGoogle-urling..");
 			$ch = curl_init();
-			curl_setopt($ch,CURLOPT_URL, 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyDpJpbZ2s3Gftdephw1HSB1Mk00PLzx_I0');
+		  curl_setopt($ch,CURLOPT_URL, 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyDpJpbZ2s3Gftdephw1HSB1Mk00PLzx_I0');
 			curl_setopt($ch,CURLOPT_POST,1);
 			curl_setopt($ch,CURLOPT_POSTFIELDS,json_encode(array("longUrl"=>$url)));
 			curl_setopt($ch,CURLOPT_HTTPHEADER,array("Content-Type: application/json"));
 			curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
-			$result = curl_exec($ch);
-			$arr = json_decode($result, true);
+      $result = curl_exec($ch);
+		  $arr = json_decode($result, true);
 			if ($arr['id']) {
 				$shortUrl = $arr['id'];
 			} else {
@@ -62,7 +65,7 @@ $client->on('message', function ($data) use ($client) {
         ->setText($shortUrl)
         ->setChannel($channel)
         ->create();
-      $client->postMessage($message)
+      $client->postMessage($message);
 
       /*
 			error_log("\tSaving to db");
@@ -79,8 +82,8 @@ $client->on('message', function ($data) use ($client) {
 				}
 			}
       */
-    	});
-	} elseif (strpos('ping', $data['text']) === 0) {
+    });
+  } elseif (strpos('ping', $data['text']) === 0) {
 		$client->getChannelGroupOrDMByID($data['channel'])->then(function ($channel) use ($client, $data) {
 			error_log("Ping? Pong!");
 			$message = $client->getMessageBuilder()
@@ -90,6 +93,7 @@ $client->on('message', function ($data) use ($client) {
 			$client->postMessage($message);
 		});
 	} elseif (strpos('https://goo.gl/', $data['text']) === false && strpos("Oh that's an interesting image..", $data['text']) === false && strpos('Pong motherfucker!', $data['text']) === false && strpos('BTC', $data['text']) === false && !empty($data['text'])) {
+    /*
 		$client->getChannelGroupOrDMByID($data['channel'])->then(function ($channel) use ($client, $data) {
 			$connection = mysqli_connect('localhost', 'root', '');
 			if ($connection === false) {
@@ -112,6 +116,7 @@ $client->on('message', function ($data) use ($client) {
 				}
 			}
 		});
+    */
 	} else {
         /** skip for now **/
         /*
